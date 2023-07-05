@@ -1,0 +1,101 @@
+---
+title: "cites_EDA"
+author: "matsu"
+date: "2022/3/10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+install packages
+```{r}
+pacman::p_load(questionr, tidyverse, plyr, dplyr, ggplot2, readr, here, data.table, parallel, ggridges, here, lattice)
+```
+
+import rds file
+```{r}
+cites <- readRDS("cites.rds")
+```
+variables
+```{r}
+cites %>% names()
+```
+importer and exporting country information
+```{r}
+# cites$Importer %>% unique() #Importer
+citesimpj <- subset(cites, cites$Importer=="JP") #日本が輸入国のケース
+
+citesimpj %>% subset(select = c(Class, Quantity)) %>%
+  group_by(Class) %>% summarise_each(funs(sum)) %>%
+  na.omit(Class) %>%  subset(select = c(Quantity))%>% colSums() #321047873 total number imported by Japan
+```
+save as RDS
+```{r}
+saveRDS(citesimpj, "cites_japan.RDS")
+```
+
+categorized by class and pie chart by class
+```{r}
+citesimpj %>% subset(select = c(Class, Quantity)) %>%
+  group_by(Class) %>% summarise_each(funs(sum)) %>%
+  na.omit(Class) %>%
+  ggplot( aes(x="", y=Quantity, fill=Class)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar(theta = "y") +
+  geom_col(width = 1, color = 1) +
+  geom_text(aes(label = paste0(100*Quantity/321047873, "%")), position = position_stack(vjust = 0.5))+
+  labs(x = NULL, y = NULL, fill = NULL)+
+  guides(fill = guide_legend(title = "Class"))+
+  theme_void()
+```
+categorized by countries exporting to Japan
+```{r}
+a <- citesimpj %>% subset(select = c(Exporter, Quantity)) %>% 
+  group_by(Exporter) %>% summarise_each(funs(sum)) %>%
+  na.omit(Exporter) 
+a <- a[with(a,order(-Quantity)),]
+a <- a[1:10,]
+ggplot(a,aes(x=Exporter, y=Quantity))+
+  geom_bar(stat="identity")+
+  coord_flip()
+```
+
+アロエの取引
+```{r}
+citesimpj %>% 
+  # dplyr::filter(Source %in% c("I")) %>% 
+  dplyr::filter(Year > 2015) %>% 
+  dplyr::filter(Genus %in%  c("Aloe"))
+
+```
+ランの取引
+```{r}
+citesimpj %>% 
+  # dplyr::filter(Source %in% c("I")) %>% 
+  dplyr::filter(Year > 2015) %>% 
+  dplyr::filter(Genus %in%  c("Orchis"))
+```
+ソテツ
+```{r}
+citesimpj %>% 
+  # dplyr::filter(Source %in% c("I")) %>% 
+  dplyr::filter(Year > 2015) %>% 
+  dplyr::filter(Genus %in%  c("Cycas"))
+```
+ヘゴ
+```{r}
+citesimpj %>% 
+  # dplyr::filter(Source %in% c("I")) %>% 
+  dplyr::filter(Year > 2015) %>% 
+  dplyr::filter(Genus %in%  c("Cyathea"))
+```
+トウダイグサ
+```{r}
+citesimpj %>% 
+  # dplyr::filter(Source %in% c("I")) %>% 
+  dplyr::filter(Year > 2015) %>% 
+  dplyr::filter(Genus %in%  c("Euphorbia"))
+```
+

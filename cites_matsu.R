@@ -8,7 +8,7 @@ setwd("---")
 pacman::p_load(tidyverse, plyr, dplyr, ggplot2, readr, here, data.table, parallel, ggridges, here, lattice)
 
 ### import and append multiple csv ###
-mydir = "----" #ウェブサイト(https://trade.cites.org/)からダウンロードしたフォルダーの置き場所
+mydir = "C:/Users/Masanori_Matsuura/Documents/学会_研究会_勉強会/one health/analysis/Trade_database_download_v2023.1/Trade_database_download_v2023.1" #ウェブサイト(https://trade.cites.org/)からダウンロードしたフォルダーの置き場所
 myfiles = list.files(path=mydir, pattern="*.csv", full.names=TRUE) #そのフォルダーの中にあるcsvを一括読み込み
 dat_csv = ldply(myfiles, read_csv)
 
@@ -94,8 +94,6 @@ citesimpjheat[is.na(citesimpjheat)] <- 0
 citesimpjheat <- citesimpjheat[1:10]
 levelplot( t(citesimpjheat[c(nrow(citesimpjheat):1) , ]),
            col.regions=heat.colors(10000))
-
-
 
 
 ### categorized by countries Importing from Japan

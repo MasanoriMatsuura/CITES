@@ -5,7 +5,7 @@
 setwd("---")
 
 ###install packages ###
-pacman::p_load(tidyverse, plyr, dplyr, ggplot2, readr, here, data.table, parallel, ggridges, here, lattice, devtools)
+pacman::p_load(patchwork, tidyverse, plyr, dplyr, ggplot2, readr, here, data.table, parallel, ggridges, here, lattice, devtools)
 
 ### import and append multiple csv ###
 mydir = "C:/Users/Masanori_Matsuura/Documents/Research/one health/analysis/Trade_database_download_v2023.1/Trade_database_download_v2023.1" #ウェブサイト(https://trade.cites.org/)からダウンロードしたフォルダーの置き場所
@@ -14,9 +14,9 @@ dat_csv = ldply(myfiles, read_csv)
 
 
 # Focusing on Japanese cases ----------------------------------------------
+cites <-  readRDS("C:/Users/mm_wi/Documents/research/onehealth/R/cites.rds")
 
 cites <- dat_csv #data_all
-
 cites %>% names()
 # [1] "Id"                     "Year"                   "Appendix"
 # [4] "Taxon"                  "Class"                  "Order"
@@ -45,7 +45,6 @@ cites$Importer %>% unique() #Importer
 citesimpj <- subset(cites, cites$Year!="2022" & cites$Importer=="JP" & cites$Term=="live" & cites$Source=="W" & cites$Class==c("Reptilia", "Aves", "Mammalia", "Amphibia"))
 #Importer is Japan, non-plant and term is live 哺乳類・鳥類・両生類・爬虫類,
 citesimpj[is.na(citesimpj)] <- 0
-citesimpj
 citesimpj_unit <- citesimpj %>% 
   mutate(Unit = replace(Unit, Unit==0, "q"))
 
@@ -76,17 +75,49 @@ ggplot(citesimpj, aes(x=Year))+
   xlab("年")
   ggsave("取引件数.png")
 
-E### 日本の国別輸入件数
+japan_import_year <- aggregate( .~ Year, data = citesimpj, FUN = length)
+japan_import_year <- subset(japan_import_year, select = c(Year, Quantity)) 
+japan_import_year <- sapply(japan_import_year, as.numeric)
+japan_import_year <- as.data.frame(japan_import_year)
+print(japan_import_year) #輸入件数
+
+japan_case <- ggplot(citesimpj, aes(x=Year))+
+  geom_histogram(color="darkblue", fill="lightblue", binwidth = 1)+ 
+  ylab("取引件数")+
+  xlab("年") #輸入件数
+ggsave("取引件数_jp.png")
+print(japan_case)
+
+japan_case <- ggplot(japan_import_year, aes(x = Year)) +
+  geom_line(aes(y = Quantity)) +
+  labs(x = "年", y = "輸入件数") +
+  theme_minimal()
+print(japan_case)  
+
+### 日本の輸入動物
+### 日本の動物別輸入件数
+cites_taxon_import<-count(citesimpj$Family)
+write.csv(cites_taxon_import, "jp_taxon.csv")
+
+
+### カメレオン科
+#### 国
+japan_chamae <- subset(citesimpj, Family %in% c("Chamaeleonidae"))
+japan_chamae <- count(japan_chamae$Exporter)
+write.csv(japan_chamae, "japan_chamae.csv")
+#### 目的
+japan_chamae_p <- subset(citesimpj, Family %in% c("Chamaeleonidae"))
+japan_chamae_p <- count(japan_chamae_p$Purpose)
+write.csv(japan_chamae_p, "japan_chamae_p.csv")
+
+### オオトカゲ科
+###　ニシキヘビ科
+### リクガメ科
+### ヤモリ科
+
+### 日本の国別輸入件数
 cites_country_export<-count(citesimpj$Exporter)
 write.csv(cites_country_export, "取引件数_国.csv")
-
-cites_country_export %>% 
-  top_n(10, freq) %>%
-  ggplot(aes(x=x, y=freq))+
-  geom_bar(color="darkblue", fill="lightblue", stat = "identity")+ 
-  ylab("取引件数")+
-  xlab("国") # by year
-ggsave("取引件数_国.png")
 
 
 ### インドと日本の取引実態
@@ -156,12 +187,53 @@ citesimpc %>% subset(select = c(Class, Quantity)) %>%
 saveRDS(citesimpc, "cites")
 
 ### EDA 
-###　中国の年別輸入件数
-ggplot(citesimpc, aes(x=Year))+
+###　中国の年別輸入件数と輸入量
+china_import_year <- aggregate( .~ Year, data = citesimpc, FUN = length)
+china_import_year <- subset(china_import_year, select = c(Year, Quantity)) 
+china_import_year <- sapply(china_import_year, as.numeric)
+china_import_year <- as.data.frame(china_import_year)
+print(china_import_year) #輸入件数
+
+china_case <- ggplot(citesimpc, aes(x=Year))+
   geom_histogram(color="darkblue", fill="lightblue", binwidth = 1)+ 
   ylab("取引件数")+
-  xlab("年")
+  xlab("年") #輸入件数
 ggsave("取引件数_CN.png")
+print(china_case)
+
+china_case <- ggplot(china_import_year, aes(x = Year)) +
+  geom_line(aes(y = Quantity)) +
+  labs(x = "年", y = "輸入件数") +
+  theme_minimal()
+print(china_case)
+
+###中国GDP
+gdp <- read.csv("C:/Users/mm_wi/Documents/research/onehealth/R/China/API_NY.GDP.MKTP.CD_DS2_en_csv_v2_6011335.csv", skip = 4)
+china <- gdp %>% filter(Country.Name == "China") ## extract China
+new_names <- gsub("X", "", names(china))
+china <- setNames(china, new_names)
+china <- gather(china, key = Year, value = "GDP")
+china <- china[-c(1:30, 67:68),]
+china <- sapply(china, as.numeric)
+china <- as.data.frame(china)　#China GDPデータ
+
+china_gdp <- ggplot(china, aes(x = Year)) +
+     geom_line(aes(y = GDP), linetype = "dashed") +
+     labs(x = "年", y = "実質GDP (USドル)") +
+     theme_minimal()
+print(china_gdp)
+
+china_gdp_case <- china_case + china_gdp
+print(china_gdp_case)
+ggsave("china_case_gdp.png")
+
+#輸入件数とGDPを重ね合わせる
+# china_gdp_case <- ggplot() +
+#   geom_line(data = china_import_year, aes(x = Year, y=Quantity)) +
+#   geom_line(data = china, aes(x = Year, y= GDP),linetype = "dashed") +
+#   scale_y_continuous(name = "輸入件数", sec.axis = sec_axis(~ ., name = "実質GDP (USドル)", trans = ~./100000000000)) +
+#   ggtitle("中国の輸入件数とGDP推移")
+# print(china_gdp_case)
 
 ### 中国の国別輸入件数
 cites_country_export<-count(citesimpc$Exporter)
@@ -222,20 +294,71 @@ saveRDS(citesimpt, "cites")
 
 ### EDA 
 ###　タイの年別輸入件数
-ggplot(citesimpt, aes(x=Year))+
+thai_import_year <- aggregate( .~ Year, data = citesimpt, FUN = length)
+thai_import_year <- subset(thai_import_year, select = c(Year, Quantity)) 
+thai_import_year <- sapply(thai_import_year, as.numeric)
+thai_import_year <- as.data.frame(thai_import_year)
+print(thai_import_year) #輸入件数
+
+thai_case <- ggplot(citesimpt, aes(x=Year))+
   geom_histogram(color="darkblue", fill="lightblue", binwidth = 1)+ 
   ylab("取引件数")+
-  xlab("年")
-ggsave("取引件数_TH.png")
+  xlab("年") #輸入件数
+ggsave("取引件数_CN.png")
+print(thai_case)
+
+thai_case <- ggplot(thai_import_year, aes(x = Year)) +
+  geom_line(aes(y = Quantity)) +
+  labs(x = "年", y = "輸入件数") +
+  theme_minimal()
+print(thai_case)
+
+### タイのGDP変遷
+thai <- gdp %>% filter(Country.Name == "Thailand") ## extract China
+new_names <- gsub("X", "", names(thai))
+thai <- setNames(thai, new_names)
+thai <- gather(thai, key = Year, value = "GDP")
+thai <- thai[-c(1:30, 67:68),]
+thai <- sapply(thai, as.numeric)
+thai <- as.data.frame(thai)　#China GDPデータ
+
+thai_gdp <- ggplot(thai, aes(x = Year)) +
+  geom_line(aes(y = GDP), linetype = "dashed") +
+  labs(x = "年", y = "実質GDP (USドル)") +
+  theme_minimal()
+print(thai_gdp)
+
+thai_gdp_case <- thai_case + thai_gdp
+print(thai_gdp_case)
+ggsave("thai_case_gdp.png")
 
 ### タイの国別輸入件数
 cites_country_export<-count(citesimpt$Exporter)
 write.csv(cites_country_export, "取引件数_国_TH.csv")
 
-cites_country_export %>% 
-  top_n(10, freq) %>%
-  ggplot(aes(x=x, y=freq))+
-  geom_bar(color="darkblue", fill="lightblue", stat = "identity")+ 
-  ylab("取引件数")+
-  xlab("国") # by year
-ggsave("取引件数_国_TH.png")
+
+### ガイアナとタイの取引実態
+citesimpt_id <- subset(citesimpt, Exporter %in% c("GY"))
+cites_id_export<-count(citesimpt_id$Family)
+write.csv(cites_id_export, "ガイアナ_科_TH.csv")
+
+
+### スリナムとタイの取引実態
+citesimpt_us <- subset(citesimpt, Exporter %in% c("SR"))
+cites_us_export<-count(citesimpt_us$Family)
+write.csv(cites_us_export, "スリナム_科_TH.csv")
+
+### マダガスカルとタイの取引実態
+citesimpt_au <- subset(citesimpt, Exporter %in% c("MG"))
+cites_au_export<-count(citesimpt_au$Family)
+write.csv(cites_au_export, "マダガスカル_科_TH.csv")
+
+### シンガポールとタイの取引実態
+citesimpt_my <- subset(citesimpt, Exporter %in% c("SG"))
+cites_my_export<-count(citesimpt_my$Family)
+write.csv(cites_my_export, "シンガポール_科_TH.csv")
+
+### オランダとタイの取引実態
+citesimpt_TH <- subset(citesimpt, Exporter %in% c("NL"))
+cites_TH_export<-count(citesimpt_TH$Family)
+write.csv(cites_TH_export, "オランダ_科_TH.csv")

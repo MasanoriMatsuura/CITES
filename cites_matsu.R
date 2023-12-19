@@ -111,54 +111,24 @@ japan_chamae_p <- count(japan_chamae_p$Purpose)
 write.csv(japan_chamae_p, "japan_chamae_p.csv")
 
 ### オオトカゲ科
+#### 国
+japan_Varanidae <- subset(citesimpj, Family %in% c("Varanidae"))
+japan_Varanidae <- count(japan_Varanidae$Exporter)
+write.csv(japan_Varanidae, "japan_Varanidae.csv")
+#### 目的
+japan_Varanidae_p <- subset(citesimpj, Family %in% c("Varanidae"))
+japan_Varanidae_p <- count(japan_Varanidae_p$Purpose)
+write.csv(japan_Varanidae_p, "japan_Varanidae_p.csv")
+
 ###　ニシキヘビ科
-### リクガメ科
-### ヤモリ科
-
-### 日本の国別輸入件数
-cites_country_export<-count(citesimpj$Exporter)
-write.csv(cites_country_export, "取引件数_国.csv")
-
-
-### インドと日本の取引実態
-citesimpj_id <- subset(citesimpj, Exporter %in% c("ID"))
-cites_id_export<-count(citesimpj_id$Family)
-write.csv(cites_id_export, "インド_科.csv")
-
-
-### マダガスカルと日本の取引実態
-citesimpj_us <- subset(citesimpj, Exporter %in% c("MG"))
-cites_us_export<-count(citesimpj_us$Family)
-write.csv(cites_us_export, "マダガスカル_科.csv")
-
-### アメリカと日本の取引実態
-citesimpj_au <- subset(citesimpj, Exporter %in% c("US"))
-cites_au_export<-count(citesimpj_au$Family)
-write.csv(cites_au_export, "us_科.csv")
-
-### タンザニアと日本の取引実態
-citesimpj_my <- subset(citesimpj, Exporter %in% c("TZ"))
-cites_my_export<-count(citesimpj_my$Family)
-write.csv(cites_my_export, "tz_科.csv")
-
-### ガイアナと日本の取引実態
-citesimpj_cn <- subset(citesimpj, Exporter %in% c("GY"))
-cites_cn_export<-count(citesimpj_cn$Family)
-write.csv(cites_cn_export, "gy_科.csv")
-
-
-### categorized by countries Importing from Japan
-a <- citesexpj %>% subset(select = c(Importer, Quantity)) %>% 
-  group_by(Importer) %>% summarise_each(funs(sum)) %>%
-  na.omit(Importer) 
-a <- a[with(a,order(-Quantity)),]
-a <- a[1:10,]
-ggplot(a,aes(x=Importer, y=Quantity))+
-  geom_bar(stat="identity")+
-  coord_flip()
-
-### line chart of year and quantity
-ggplot(citesjsub, aes(x=Exporter))+geom_histogram(color="darkblue", fill="lightblue")
+#### 国
+japan_Pythonidae <- subset(citesimpj, Family %in% c("Pythonidae"))
+japan_Pythonidae <- count(japan_Pythonidae$Exporter)
+write.csv(japan_Pythonidae, "japan_Pythonidae.csv")
+#### 目的
+japan_Pythonidae_p <- subset(citesimpj, Family %in% c("Pythonidae"))
+japan_Pythonidae_p <- count(japan_Pythonidae_p$Purpose)
+write.csv(japan_Pythonidae_p, "japan_Pythonidae_p.csv")
 
 ##China
 #### importer and exporting country information 
@@ -239,34 +209,42 @@ ggsave("china_case_gdp.png")
 cites_country_export<-count(citesimpc$Exporter)
 write.csv(cites_country_export, "取引件数_国.csv")
 
-### インドと中国の取引実態
-citesimpc_id <- subset(citesimpc, Exporter %in% c("ID"))
-cites_id_export<-count(citesimpc_id$Family)
-write.csv(cites_id_export, "インド_科_CN.csv")
+### 中国の輸入動物
+### 中国の動物別輸入件数
+cites_taxon_import<-count(citesimpc$Family)
+write.csv(cites_taxon_import, "cn_taxon.csv")
 
+### イシガメ科
+#### 国
+china_Geoemydidae <- subset(citesimpc, Family %in% c("Geoemydidae"))
+china_Geoemydidae <- count(china_Geoemydidae$Exporter)
+write.csv(china_Geoemydidae, "china_Geoemydidae.csv")
+#### 目的
+china_Geoemydidae_p <- subset(citesimpc, Family %in% c("Geoemydidae"))
+china_Geoemydidae_p <- count(china_Geoemydidae_p$Purpose)
+write.csv(china_Geoemydidae_p, "china_Geoemydidae_p.csv")
 
-### マレーシアと中国の取引実態
-citesimpc_us <- subset(citesimpc, Exporter %in% c("MY"))
-cites_us_export<-count(citesimpc_us$Family)
-write.csv(cites_us_export, "マレーシア_科_CN.csv")
+### スッポン科
+#### 国
+china_Trionychidae <- subset(citesimpc, Family %in% c("Trionychidae"))
+china_Trionychidae <- count(china_Trionychidae$Exporter)
+write.csv(china_Trionychidae, "china_Trionychidae.csv")
+#### 目的
+china_Trionychidae_p <- subset(citesimpc, Family %in% c("Trionychidae"))
+china_Trionychidae_p <- count(china_Trionychidae_p$Purpose)
+write.csv(china_Trionychidae_p, "china_Trionychidae_p.csv")
 
-### ガイアナと中国の取引実態
-citesimpc_au <- subset(citesimpc, Exporter %in% c("GY"))
-cites_au_export<-count(citesimpc_au$Family)
-write.csv(cites_au_export, "ガイアナ_科_CN.csv")
+###　インコ科
+#### 国
+china_Psittacidae <- subset(citesimpc, Family %in% c("Psittacidae"))
+china_Psittacidae <- count(china_Psittacidae$Exporter)
+write.csv(china_Psittacidae, "china_Psittacidae.csv")
+#### 目的
+china_Psittacidae_p <- subset(citesimpc, Family %in% c("Psittacidae"))
+china_Psittacidae_p <- count(china_Psittacidae_p$Purpose)
+write.csv(china_Psittacidae_p, "china_Psittacidae_p.csv")
 
-### 日本と中国の取引実態
-citesimpc_my <- subset(citesimpc, Exporter %in% c("JP"))
-cites_my_export<-count(citesimpc_my$Family)
-write.csv(cites_my_export, "日本_科_CN.csv")
-
-### スリナム中国の取引実態
-citesimpc_cn <- subset(citesimpc, Exporter %in% c("SR"))
-cites_cn_export<-count(citesimpc_cn$Family)
-write.csv(cites_cn_export, "SR_科_CN.csv")
-
-
-##Thailand
+##タイ
 #### importer and exporting country information 
 citesimpt <- subset(cites, cites$Year!="2022" & cites$Importer=="TH" & cites$Term=="live" & cites$Source=="W" & cites$Class==c("Reptilia", "Aves", "Mammalia", "Amphibia"))
 #Importer is China, non-plant and term is live 哺乳類・鳥類・両生類・爬虫類,
@@ -332,33 +310,37 @@ thai_gdp_case <- thai_case + thai_gdp
 print(thai_gdp_case)
 ggsave("thai_case_gdp.png")
 
-### タイの国別輸入件数
-cites_country_export<-count(citesimpt$Exporter)
-write.csv(cites_country_export, "取引件数_国_TH.csv")
+### タイの動物別輸入件数
+cites_taxon_import<-count(citesimpt$Family)
+write.csv(cites_taxon_import, "th_taxon.csv")
 
+###　インコ科
+#### 国
+thai_Psittacidae <- subset(citesimpt, Family %in% c("Psittacidae"))
+thai_Psittacidae <- count(thai_Psittacidae$Exporter)
+write.csv(thai_Psittacidae, "thai_Psittacidae.csv")
+#### 目的
+thai_Psittacidae_p <- subset(citesimpt, Family %in% c("Psittacidae"))
+thai_Psittacidae_p <- count(thai_Psittacidae_p$Purpose)
+write.csv(thai_Psittacidae_p, "thai_Psittacidae_p.csv")
 
-### ガイアナとタイの取引実態
-citesimpt_id <- subset(citesimpt, Exporter %in% c("GY"))
-cites_id_export<-count(citesimpt_id$Family)
-write.csv(cites_id_export, "ガイアナ_科_TH.csv")
+###　カメレオン科
+#### 国
+thai_Trionychidae <- subset(citesimpt, Family %in% c("Chamaeleonidae"))
+thai_Trionychidae <- count(thai_Trionychidae$Exporter)
+write.csv(thai_Trionychidae, "thai_Trionychidae.csv")
+#### 目的
+thai_Trionychidae_p <- subset(citesimpt, Family %in% c("Trionychidae"))
+thai_Trionychidae_p <- count(thai_Trionychidae_p$Purpose)
+write.csv(thai_Trionychidae_p, "thai_Trionychidae_p.csv")
 
+###　オオハシ科
+#### 国
+thai_Ramphastidae <- subset(citesimpt, Family %in% c("Ramphastidae"))
+thai_Ramphastidae <- count(thai_Ramphastidae$Exporter)
+write.csv(thai_Ramphastidae, "thai_Ramphastidae.csv")
+#### 目的
+thai_Ramphastidae_p <- subset(citesimpt, Family %in% c("Ramphastidae"))
+thai_Ramphastidae_p <- count(thai_Ramphastidae_p$Purpose)
+write.csv(thai_Ramphastidae_p, "thai_Ramphastidae_p.csv")
 
-### スリナムとタイの取引実態
-citesimpt_us <- subset(citesimpt, Exporter %in% c("SR"))
-cites_us_export<-count(citesimpt_us$Family)
-write.csv(cites_us_export, "スリナム_科_TH.csv")
-
-### マダガスカルとタイの取引実態
-citesimpt_au <- subset(citesimpt, Exporter %in% c("MG"))
-cites_au_export<-count(citesimpt_au$Family)
-write.csv(cites_au_export, "マダガスカル_科_TH.csv")
-
-### シンガポールとタイの取引実態
-citesimpt_my <- subset(citesimpt, Exporter %in% c("SG"))
-cites_my_export<-count(citesimpt_my$Family)
-write.csv(cites_my_export, "シンガポール_科_TH.csv")
-
-### オランダとタイの取引実態
-citesimpt_TH <- subset(citesimpt, Exporter %in% c("NL"))
-cites_TH_export<-count(citesimpt_TH$Family)
-write.csv(cites_TH_export, "オランダ_科_TH.csv")

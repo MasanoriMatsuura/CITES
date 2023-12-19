@@ -326,13 +326,13 @@ write.csv(thai_Psittacidae_p, "thai_Psittacidae_p.csv")
 
 ###　カメレオン科
 #### 国
-thai_Trionychidae <- subset(citesimpt, Family %in% c("Chamaeleonidae"))
-thai_Trionychidae <- count(thai_Trionychidae$Exporter)
-write.csv(thai_Trionychidae, "thai_Trionychidae.csv")
+thai_Chamaeleonidae <- subset(citesimpt, Family %in% c("Chamaeleonidae"))
+thai_Chamaeleonidae <- count(thai_Chamaeleonidae$Exporter)
+write.csv(thai_Chamaeleonidae, "thai_Chamaeleonidae.csv")
 #### 目的
-thai_Trionychidae_p <- subset(citesimpt, Family %in% c("Trionychidae"))
-thai_Trionychidae_p <- count(thai_Trionychidae_p$Purpose)
-write.csv(thai_Trionychidae_p, "thai_Trionychidae_p.csv")
+thai_Chamaeleonidae_p <- subset(citesimpt, Family %in% c("Chamaeleonidae"))
+thai_Chamaeleonidae_p <- count(thai_Chamaeleonidae_p$Purpose)
+write.csv(thai_Chamaeleonidae_p, "thai_Chamaeleonidae_p.csv")
 
 ###　オオハシ科
 #### 国

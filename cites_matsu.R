@@ -5,7 +5,7 @@
 setwd("---")
 
 ###install packages ###
-pacman::p_load(patchwork, tidyverse, plyr, dplyr, ggplot2, readr, here, data.table, parallel, ggridges, here, lattice, devtools)
+pacman::p_load(cowplot, patchwork, tidyverse, plyr, dplyr, ggplot2, readr, here, data.table, parallel, ggridges, here, lattice, devtools)
 
 ### import and append multiple csv ###
 mydir = "C:/Users/Masanori_Matsuura/Documents/Research/one health/analysis/Trade_database_download_v2023.1/Trade_database_download_v2023.1" #ウェブサイト(https://trade.cites.org/)からダウンロードしたフォルダーの置き場所
@@ -62,7 +62,7 @@ citesimpj$Unit %>% unique()
 
 citesimpj %>% subset(select = c(Class, Quantity)) %>%
   na.omit(Class) %>% subset(select = c(Quantity)) %>%
-  colSums() # 446384 
+  colSums() #446384 
 
 
 saveRDS(citesimpj, "cites")
@@ -81,18 +81,56 @@ japan_import_year <- sapply(japan_import_year, as.numeric)
 japan_import_year <- as.data.frame(japan_import_year)
 print(japan_import_year) #輸入件数
 
-japan_case <- ggplot(citesimpj, aes(x=Year))+
-  geom_histogram(color="darkblue", fill="lightblue", binwidth = 1)+ 
-  ylab("取引件数")+
-  xlab("年") #輸入件数
-ggsave("取引件数_jp.png")
-print(japan_case)
+japan_case_pot <- plot(japan_import_year$Year, y=japan_import_year$Quantity,
+                       xlab='Year', ylab='輸入件数', ylim = c(0,600), type="l")
 
-japan_case <- ggplot(japan_import_year, aes(x = Year)) +
-  geom_line(aes(y = Quantity)) +
-  labs(x = "年", y = "輸入件数") +
-  theme_minimal()
-print(japan_case)  
+###日本実質GDP per capita (USドル)
+gdp <- read.csv("C:\\Users\\mm_wi\\Documents\\research\\onehealth\\R\\gdp\\API_NY.GDP.PCAP.KD_DS2_en_csv_v2_6298445.csv", skip = 4)
+japan <- gdp %>% filter(Country.Name == "Japan") ## extract japan
+new_names <- gsub("X", "", names(japan))
+japan <- setNames(japan, new_names)
+japan <- gather(japan, key = Year, value = "GDP")
+japan <- japan[-c(1:34, 66:68),]
+japan <- sapply(japan, as.numeric)
+japan <- as.data.frame(japan)　#japan GDPデータ
+
+### GDP per capitaと件数
+par(oma = c(0, 1, 0, 3))
+japan_case_pot <- plot(japan_import_year$Year, y=japan_import_year$Quantity,
+                       xlab='Year', ylab='輸入件数', ylim = c(0,600), type="l")
+axis(2)
+par(new = T)
+japan_gdpp_case <- plot(japan$Year, japan$GDP, ylim = c(15000,36000),
+                        xlab='', ylab='',
+                        type='l', lty='dotted', axes = F)
+mtext('実質GDP per capita (USドル)', side = 4, line = 3)
+axis(4)
+legend("bottomleft", legend = c("輸入件数", "GDP per capita"),
+       lty = c('solid', 'dotted'), bty="n", cex=1)
+
+###日本GDP
+gdp_p <- read.csv("C:\\Users\\mm_wi\\Documents\\research\\onehealth\\R\\gdeppercapita\\API_NY.GDP.MKTP.KD_DS2_en_csv_v2_6298496.csv", skip = 4)
+japan_p <- gdp_p %>% filter(Country.Name == "Japan") ## extract japan_p
+new_names <- gsub("X", "", names(japan_p))
+japan_p <- setNames(japan_p, new_names)
+japan_p <- gather(japan_p, key = Year, value = "GDP")
+japan_p <- japan_p[-c(1:34, 66:68),]
+japan_p <- sapply(japan_p, as.numeric)
+japan_p <- as.data.frame(japan_p)　#japan_p GDPデータ
+
+###GDPと件数
+par(oma = c(0, 1, 0, 3))
+plot(japan_import_year$Year, y=japan_import_year$Quantity,
+                       xlab='Year', ylab='輸入件数', ylim = c(0,600), type="l")
+axis(2)
+par(new = T)
+plot(japan_p$Year, japan_p$GDP, ylim = c(1500000000000,4600000000000),
+                        xlab='', ylab='',
+                        type='l', lty='dotted', axes = F)
+mtext('実質GDP (USドル)', side = 4, line = 3)
+axis(4)
+legend("bottomleft", legend = c("輸入件数", "GDP"),
+       lty = c('solid', 'dotted'), bty="n", cex=1)
 
 ### 日本の輸入動物
 ### 日本の動物別輸入件数
@@ -177,33 +215,53 @@ china_case <- ggplot(china_import_year, aes(x = Year)) +
   theme_minimal()
 print(china_case)
 
-###中国GDP
-gdp <- read.csv("C:/Users/mm_wi/Documents/research/onehealth/R/China/API_NY.GDP.MKTP.CD_DS2_en_csv_v2_6011335.csv", skip = 4)
-china <- gdp %>% filter(Country.Name == "China") ## extract China
+###中国実質GDP per capita (USドル)
+gdp <- read.csv("C:\\Users\\mm_wi\\Documents\\research\\onehealth\\R\\gdp\\API_NY.GDP.PCAP.KD_DS2_en_csv_v2_6298445.csv", skip = 4)
+china <- gdp %>% filter(Country.Name == "China") ## extract china
 new_names <- gsub("X", "", names(china))
 china <- setNames(china, new_names)
 china <- gather(china, key = Year, value = "GDP")
-china <- china[-c(1:30, 67:68),]
+china <- china[-c(1:34, 66:68),]
 china <- sapply(china, as.numeric)
-china <- as.data.frame(china)　#China GDPデータ
+china <- as.data.frame(china)　#china GDPデータ
 
-china_gdp <- ggplot(china, aes(x = Year)) +
-     geom_line(aes(y = GDP), linetype = "dashed") +
-     labs(x = "年", y = "実質GDP (USドル)") +
-     theme_minimal()
-print(china_gdp)
+### GDP per capitaと件数
+par(oma = c(0, 1, 0, 3))
+china_case_pot <- plot(china_import_year$Year, y=china_import_year$Quantity,
+                       xlab='Year', ylab='輸入件数', ylim = c(0,500), type="l")
+axis(2)
+par(new = T)
+china_gdpp_case <- plot(china$Year, china$GDP, ylim = c(0,13000),
+                        xlab='', ylab='',
+                        type='l', lty='dotted', axes = F)
+mtext('実質GDP per capita (USドル)', side = 4, line = 3)
+axis(4)
+legend("topleft", legend = c("輸入件数", "GDP per capita"),
+       lty = c('solid', 'dotted'), bty="n", cex=1)
 
-china_gdp_case <- china_case + china_gdp
-print(china_gdp_case)
-ggsave("china_case_gdp.png")
+###中国GDP
+gdp_p <- read.csv("C:\\Users\\mm_wi\\Documents\\research\\onehealth\\R\\gdeppercapita\\API_NY.GDP.MKTP.KD_DS2_en_csv_v2_6298496.csv", skip = 4)
+china_p <- gdp_p %>% filter(Country.Name == "China") ## extract china_p
+new_names <- gsub("X", "", names(china_p))
+china_p <- setNames(china_p, new_names)
+china_p <- gather(china_p, key = Year, value = "GDP")
+china_p <- china_p[-c(1:34, 66:68),]
+china_p <- sapply(china_p, as.numeric)
+china_p <- as.data.frame(china_p)　#china_p GDPデータ
 
-#輸入件数とGDPを重ね合わせる
-# china_gdp_case <- ggplot() +
-#   geom_line(data = china_import_year, aes(x = Year, y=Quantity)) +
-#   geom_line(data = china, aes(x = Year, y= GDP),linetype = "dashed") +
-#   scale_y_continuous(name = "輸入件数", sec.axis = sec_axis(~ ., name = "実質GDP (USドル)", trans = ~./100000000000)) +
-#   ggtitle("中国の輸入件数とGDP推移")
-# print(china_gdp_case)
+###GDPと件数
+par(oma = c(0, 1, 0, 3))
+plot(china_import_year$Year, y=china_import_year$Quantity,
+     xlab='Year', ylab='輸入件数', ylim = c(0,500), type="l")
+axis(2)
+par(new = T)
+plot(china_p$Year, china_p$GDP, ylim = c(0,15000000000000),
+     xlab='', ylab='',
+     type='l', lty='dotted', axes = F)
+mtext('実質GDP (USドル)', side = 4, line = 3)
+axis(4)
+legend("topleft", legend = c("輸入件数", "GDP"),
+       lty = c('solid', 'dotted'), bty="n", cex=1)
 
 ### 中国の国別輸入件数
 cites_country_export<-count(citesimpc$Exporter)
@@ -243,6 +301,16 @@ write.csv(china_Psittacidae, "china_Psittacidae.csv")
 china_Psittacidae_p <- subset(citesimpc, Family %in% c("Psittacidae"))
 china_Psittacidae_p <- count(china_Psittacidae_p$Purpose)
 write.csv(china_Psittacidae_p, "china_Psittacidae_p.csv")
+
+###　尾長ざる科
+#### 国
+china_Cercopithecidae <- subset(citesimpc, Family %in% c("Cercopithecidae"))
+china_Cercopithecidae <- count(china_Cercopithecidae$Exporter)
+write.csv(china_Cercopithecidae, "china_Cercopithecidae.csv")
+#### 目的
+china_Cercopithecidae_p <- subset(citesimpc, Family %in% c("Cercopithecidae"))
+china_Cercopithecidae_p <- count(china_Cercopithecidae_p$Purpose)
+write.csv(china_Cercopithecidae_p, "china_Cercopithecidae_p.csv")
 
 ##タイ
 #### importer and exporting country information 
@@ -291,24 +359,53 @@ thai_case <- ggplot(thai_import_year, aes(x = Year)) +
   theme_minimal()
 print(thai_case)
 
-### タイのGDP変遷
-thai <- gdp %>% filter(Country.Name == "Thailand") ## extract China
+###タイ実質GDP per capita (USドル)
+gdp <- read.csv("C:\\Users\\mm_wi\\Documents\\research\\onehealth\\R\\gdp\\API_NY.GDP.PCAP.KD_DS2_en_csv_v2_6298445.csv", skip = 4)
+thai <- gdp %>% filter(Country.Name == "Thailand") ## extract thai
 new_names <- gsub("X", "", names(thai))
 thai <- setNames(thai, new_names)
 thai <- gather(thai, key = Year, value = "GDP")
-thai <- thai[-c(1:30, 67:68),]
+thai <- thai[-c(1:34, 66:68),]
 thai <- sapply(thai, as.numeric)
-thai <- as.data.frame(thai)　#China GDPデータ
+thai <- as.data.frame(thai)　#thai GDPデータ
 
-thai_gdp <- ggplot(thai, aes(x = Year)) +
-  geom_line(aes(y = GDP), linetype = "dashed") +
-  labs(x = "年", y = "実質GDP (USドル)") +
-  theme_minimal()
-print(thai_gdp)
+### GDP per capitaと件数
+par(oma = c(0, 1, 0, 3))
+thai_case_pot <- plot(thai_import_year$Year, y=thai_import_year$Quantity,
+                      xlab='Year', ylab='輸入件数', ylim = c(0,200), type="l")
+axis(2)
+par(new = T)
+thai_gdpp_case <- plot(thai$Year, thai$GDP, ylim = c(2000,7000),
+                       xlab='', ylab='',
+                       type='l', lty='dotted', axes = F)
+mtext('実質GDP per capita (USドル)', side = 4, line = 3)
+axis(4)
+legend("topleft", legend = c("輸入件数", "GDP per capita"),
+       lty = c('solid', 'dotted'), bty="n", cex=1)
 
-thai_gdp_case <- thai_case + thai_gdp
-print(thai_gdp_case)
-ggsave("thai_case_gdp.png")
+###タイGDP
+gdp_p <- read.csv("C:\\Users\\mm_wi\\Documents\\research\\onehealth\\R\\gdeppercapita\\API_NY.GDP.MKTP.KD_DS2_en_csv_v2_6298496.csv", skip = 4)
+thai_p <- gdp_p %>% filter(Country.Name == "Thailand") ## extract thai_p
+new_names <- gsub("X", "", names(thai_p))
+thai_p <- setNames(thai_p, new_names)
+thai_p <- gather(thai_p, key = Year, value = "GDP")
+thai_p <- thai_p[-c(1:34, 66:68),]
+thai_p <- sapply(thai_p, as.numeric)
+thai_p <- as.data.frame(thai_p)　#thai_p GDPデータ
+
+###GDPと件数
+par(oma = c(0, 1, 0, 3))
+plot(thai_import_year$Year, y=thai_import_year$Quantity,
+     xlab='Year', ylab='輸入件数', ylim = c(0,200), type="l")
+axis(2)
+par(new = T)
+plot(thai_p$Year, thai_p$GDP, ylim = c(0,450000000000),
+     xlab='', ylab='',
+     type='l', lty='dotted', axes = F)
+mtext('実質GDP (USドル)', side = 4, line = 3)
+axis(4)
+legend("topleft", legend = c("輸入件数", "GDP"),
+       lty = c('solid', 'dotted'), bty="n", cex=1)
 
 ### タイの動物別輸入件数
 cites_taxon_import<-count(citesimpt$Family)
@@ -344,3 +441,12 @@ thai_Ramphastidae_p <- subset(citesimpt, Family %in% c("Ramphastidae"))
 thai_Ramphastidae_p <- count(thai_Ramphastidae_p$Purpose)
 write.csv(thai_Ramphastidae_p, "thai_Ramphastidae_p.csv")
 
+###　オマキザル科
+#### 国
+thai_Cebidae <- subset(citesimpt, Family %in% c("Cebidae"))
+thai_Cebidae <- count(thai_Cebidae$Exporter)
+write.csv(thai_Cebidae, "thai_Cebidae.csv")
+#### 目的
+thai_Cebidae_p <- subset(citesimpt, Family %in% c("Cebidae"))
+thai_Cebidae_p <- count(thai_Cebidae_p$Purpose)
+write.csv(thai_Cebidae_p, "thai_Cebidae_p.csv")
